@@ -12,7 +12,7 @@ import torch.nn as nn
 import tempfile
 import json
 import pandas as pd
-
+import gdown
 
 # Load your pre-trained models here (replace with your actual models)
 
@@ -103,29 +103,73 @@ def load_and_set_model(model_path, model_class, *args, **kwargs):
     model.eval()
     return model
 
+def download_from_gdrive(file_id, output_path):
+    url = f'https://drive.google.com/uc?id={file_id}'
+    gdown.download(url, output_path, quiet=False)
+
 # Model Paths
-resnet_18_path = 'D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\models\\resnet_18_model.pth'
-resnet_34_path = 'D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\models\\resnet_34_model.pth'
-UNET_path      = 'D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\models\\U_Net_model.pth'
-DeeplabV3_path = 'D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\models\\DeepLabV3_model.pth'
+# resnet_18_path = 'D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\models\\resnet_18_model.pth'
+# resnet_34_path = 'D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\models\\resnet_34_model.pth'
+# UNET_path      = 'D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\models\\U_Net_model.pth'
+# DeeplabV3_path = 'D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\models\\DeepLabV3_model.pth'
 
+# file ID
+file_ids = ['1zK2xKBE0NlsqJzhjecNq9xreKy7141PE','1adNRZn7tCxgz4tHGnqJs-D8AqqSt1kjm','1QGK2CzVrbr0lnCAKFoCAgwcT3GDnFqFO','1ueO9PDwzt2gu1Rks2M_Zv4yeKWgElviA']
+# resnet_18_File_ID = '1zK2xKBE0NlsqJzhjecNq9xreKy7141PE'
+# resnet_34_File_ID = '1adNRZn7tCxgz4tHGnqJs-D8AqqSt1kjm'
+# UNet_File_ID      = '1QGK2CzVrbr0lnCAKFoCAgwcT3GDnFqFO'
+# DeeplabV3_File_ID = '1ueO9PDwzt2gu1Rks2M_Zv4yeKWgElviA'
 
-# Load and set models to evaluation mode
-resnet_18_model = load_and_set_model(resnet_18_path, ResNet18_LaneDetection)
-resnet_34_model = load_and_set_model(resnet_34_path, ResNet34_LaneDetection)
-unet_model = load_and_set_model(UNET_path, UNet)
-deeplab_model = load_and_set_model(DeeplabV3_path, DeepLabModel, num_classes=1)
+output_paths = [
+    '/tmp/models/resnet_18_model.pth',
+    '/tmp/models/resnet_34_model.pth',
+    '/tmp/models/U_Net_model.pth',
+    '/tmp/models/DeepLabV3_model.pth'
+]
+
+model_classes = [ResNet18_LaneDetection, ResNet34_LaneDetection, UNet, DeepLabModel]
+
+# Additional arguments for each model (e.g., num_classes for DeepLabModel)
+model_args = [[], [], [], [1]]
+
+# Download, load, and set each model
+for file_id, output_path, model_class, args in zip(file_ids, output_paths, model_classes, model_args):      
+    # Download model from Google Drive
+    download_from_gdrive(file_id, output_path)
+    
+    # Load and set the model using the provided function
+    if model_class == DeepLabModel:
+        model = load_and_set_model(output_path, model_class, num_classes=args[0])
+    else:
+        model = load_and_set_model(output_path, model_class)
+    
+    # For instance, setting them to variables as per your previous code:
+    if model_class == ResNet18_LaneDetection:
+        resnet_18_model = model
+    elif model_class == ResNet34_LaneDetection:
+        resnet_34_model = model
+    elif model_class == UNet:
+        unet_model = model
+    elif model_class == DeepLabModel:
+        deeplab_model = model
 
 
 # Move the models to the same device as the input data
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# device = torch.device('cpu')
-
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device('cpu')
 
 resnet_18_model.to(device)
 resnet_34_model.to(device)
 unet_model.to(device)
 deeplab_model.to(device)
+
+
+# Load and set models to evaluation mode
+# resnet_18_model = load_and_set_model(resnet_18_path, ResNet18_LaneDetection)
+# resnet_34_model = load_and_set_model(resnet_34_path, ResNet34_LaneDetection)
+# unet_model = load_and_set_model(UNET_path, UNet)
+# deeplab_model = load_and_set_model(DeeplabV3_path, DeepLabModel, num_classes=1)
+
 
 # Define a function for preprocessing the input image
 def preprocess_image(image):
@@ -136,13 +180,35 @@ def preprocess_image(image):
     ])
     return transform(image).unsqueeze(0)
 
+
+def download_file_from_gdrive(url, output_path):
+    file_id = url.split("/file/d/")[1].split("/view")[0]
+    gdown_url = f"https://drive.google.com/uc?id={file_id}"
+    gdown.download(gdown_url, output_path, quiet=False)
+
 #Load JSON file
-def load_json_file(file_path):
-    """Loads a JSON file and returns a Pandas DataFrame."""
-    with open(file_path, 'r') as f:
+# def load_json_file(file_path):
+#     """Loads a JSON file and returns a Pandas DataFrame."""
+#     with open(file_path, 'r') as f:
+#         data = json.load(f)
+#     df = pd.DataFrame(data)
+#     return df
+
+def load_json_file(file_url):
+    """Loads a JSON file from Google Drive and returns a Pandas DataFrame."""
+    # Define the temporary path to save the downloaded file.
+    temp_path = '/tmp/test_Json.json'
+    
+    # Download the file
+    download_file_from_gdrive(file_url, temp_path)
+    
+    # Load and return the DataFrame
+    with open(temp_path, 'r') as f:
         data = json.load(f)
     df = pd.DataFrame(data)
     return df
+
+
 
 def get_matching_row(df, input_image_name):
     """
@@ -170,6 +236,9 @@ def get_matching_row(df, input_image_name):
     else:
         raise ValueError(f"No matching entry found for {input_image_name} in the dataframe!")
 
+
+
+
 def generate_lane_mask(row):
     
     mask = np.zeros((720, 1280, 3))
@@ -187,8 +256,16 @@ def generate_lane_mask(row):
         cv2.polylines(mask, [lane_points], False, (255, 255, 255), thickness=15)
         
         # write the lane mask to the desired directory
-        path = 'D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\TuSimple_Dataset\\TUSimple\\test_set\\tusimple_preprocessed_test\\lane-masks'  # Shortened for readability
-        
+
+        # path = 'D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\TuSimple_Dataset\\TUSimple\\test_set\\tusimple_preprocessed_test\\lane-masks'  # Shortened for readability
+        # path = 'https://drive.google.com/drive/folders/1uafeVGyHh5d2AKG5h4ms2Q276LTvsS_7?usp=drive_link'
+
+        # Set the path to Streamlit's temporary directory
+        path = '/tmp/lane_masks'
+
+        # Ensure the directory exists
+        os.makedirs(path, exist_ok=True)
+
         # Name each mask according to its image's name
         tmp = raw_file[:-7].split('/')[-2:]
         mask_fname = f'{tmp[0]}_{tmp[1]}.jpg'
@@ -196,6 +273,8 @@ def generate_lane_mask(row):
         cv2.imwrite(new_file, mask)
         
     return mask_fname, path 
+
+
 
 def compute_metrics(true_mask, pred_mask):
     true_mask_bool = true_mask > 0
@@ -228,7 +307,11 @@ def get_arrow(current_value, prev_value):
     
 
 
-df_test_json = load_json_file('D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\TuSimple_Dataset\\TUSimple\\test_label.json')
+# df_test_json = load_json_file('D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\TuSimple_Dataset\\TUSimple\\test_label.json')
+df_test_json = load_json_file('https://drive.google.com/file/d/1o_hhB9y96pAnGXclUlmO7CiZ0LKHF8v-/view?usp=sharing')
+
+
+
 
 st.sidebar.header('Navigation')
 st.title("Lane Detection - Guiding Your Journey")
@@ -240,10 +323,18 @@ if user_role == 'Home':
         Welcome to the Lane Detection app, where technology meets the road. Leveraging cutting-edge machine learning models, this tool helps in identifying and marking lanes on the road to aid autonomous vehicles and enhance road safety. Feel free to explore and witness the convergence of artificial intelligence and road safety.
         """)
 
-        # Adding a banner image (replace 'path/to/banner.jpg' with the actual path to your banner image)
-    file_path = 'D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\UI\\Banner.jpg'
+    # Adding a banner image (replace 'path/to/banner.jpg' with the actual path to your banner image)
+    # file_path = 'D:\\Pranshu\\MS_Colleges\\SRH_Hiedelberg\\Semester_4\\Master_Thesis\\Topic\\Prof_Swati_Topics\\Lane_Detection\\TF_LD_env\\UI\\Banner.jpg'
+    Banner_file_path = 'https://drive.google.com/file/d/1IFclSTzuIn91BVftQMOPxeQPC1i7CEqh/view?usp=sharing'
+
+    # Define the temporary output path on Streamlit Cloud
+    Banner_path = '/tmp/Banner.jpg'
+
+    # Use the function to download the file
+    download_file_from_gdrive(Banner_file_path  , Banner_path)
+
     try:
-        img = Image.open(file_path)
+        img = Image.open(Banner_path)
         st.image(img, use_column_width=True)
     except Exception as e:
         st.write(f"Could not open image: {e}")
