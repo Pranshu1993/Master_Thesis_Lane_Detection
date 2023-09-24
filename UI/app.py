@@ -103,10 +103,11 @@ def load_and_set_model(model_path, model_class, *args, **kwargs):
     model.eval()
     return model
 
+@st.cache_data
 def download_from_gdrive(file_id, output_path):
     # Ensure the directory exists
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    
+
     url = f'https://drive.google.com/uc?id={file_id}'
     gdown.download(url, output_path, quiet=False)
 
@@ -183,7 +184,7 @@ def preprocess_image(image):
     ])
     return transform(image).unsqueeze(0)
 
-
+@st.cache_data
 def download_file_from_gdrive(url, output_path):
     # Ensure the directory exists
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -200,6 +201,7 @@ def download_file_from_gdrive(url, output_path):
 #     df = pd.DataFrame(data)
 #     return df
 
+@st.cache_data
 def load_json_file(file_url):
     """Loads a JSON file from Google Drive and returns a Pandas DataFrame."""
     # Define the temporary path to save the downloaded file.
