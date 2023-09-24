@@ -8,3 +8,8 @@ Download the trained models from the following links:
 - [ResNet-34](https://drive.google.com/file/d/1adNRZn7tCxgz4tHGnqJs-D8AqqSt1kjm/view?usp=drive_link)
 - [U-Net](https://drive.google.com/file/d/1QGK2CzVrbr0lnCAKFoCAgwcT3GDnFqFO/view?usp=drive_link)
 - [DeepLabV3](https://drive.google.com/file/d/1ueO9PDwzt2gu1Rks2M_Zv4yeKWgElviA/view?usp=drive_link)
+
+
+## Data Pipeline Flow
+
+![Alt text](Data_Pipeline.png)
