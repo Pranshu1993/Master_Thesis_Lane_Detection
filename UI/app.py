@@ -104,6 +104,9 @@ def load_and_set_model(model_path, model_class, *args, **kwargs):
     return model
 
 def download_from_gdrive(file_id, output_path):
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
     url = f'https://drive.google.com/uc?id={file_id}'
     gdown.download(url, output_path, quiet=False)
 
@@ -182,6 +185,9 @@ def preprocess_image(image):
 
 
 def download_file_from_gdrive(url, output_path):
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
     file_id = url.split("/file/d/")[1].split("/view")[0]
     gdown_url = f"https://drive.google.com/uc?id={file_id}"
     gdown.download(gdown_url, output_path, quiet=False)
@@ -273,7 +279,6 @@ def generate_lane_mask(row):
         cv2.imwrite(new_file, mask)
         
     return mask_fname, path 
-
 
 
 def compute_metrics(true_mask, pred_mask):
