@@ -1,4 +1,4 @@
-# Master_Thesis_Lane_Detection# Master_Thesis_Lane_Detection
+# Master_Thesis_Lane_Detection
 
 Lane detection using Deep Learning Models on Benchmark datasets like TuSimple & CuLane.
 
